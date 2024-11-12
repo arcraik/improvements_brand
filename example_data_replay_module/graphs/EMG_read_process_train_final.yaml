@@ -1,0 +1,101 @@
+graph_name: EMG_read_process_train
+metadata:
+    participant_id:            sim
+    session_description:       EMG model training based on previously collected data
+
+# ----------------------------------------------------- 
+
+# graph parameters
+parameters:
+  total_channels: &total_channels 128
+  max_repetitions: &max_repetitions 1
+  desired_fs: &desired_fs 1280
+  max_len: &max_len 200000
+  refresh_freq: &refresh_freq 32
+  output_nwb_filename: &output_nwb_filename 'output.nwb'
+  stream_definitions: &stream_definitions '../brand-modules/emg-emulator-dl-module/stream_definitions_train.yaml'
+  model_filename: &model_filename '../CNN_opt.tflite'
+  otb_filepath: &otb_filepath '/home/Data/EMG/Original_data/Hao_rest.otb+'
+
+# node-specific parameters
+nodes:
+    - name:         ReadOTBStreamEMG
+      nickname:     ReadOTBStreamEMG
+      module:       ../brand-modules/emg-emulator-dl-module
+      run_priority: 99
+      parameters:
+          log: INFO
+          output_stream_1: 'emg_data'
+          output_characteristic_1: 'waveform'
+          data_type: 'float32'
+          max_len: *max_len
+          desired_fs: *desired_fs
+          refresh_freq: *refresh_freq
+          max_repetitions: *max_repetitions
+          channel_count: *total_channels
+          otb_filepath: *otb_filepath
+          testing: False
+          sync_key: 'emg_clock'
+    - name:         ReadOTBStreamExp
+      nickname:     ReadOTBStreamExp
+      module:       ../brand-modules/emg-emulator-dl-module
+      run_priority: 99
+      parameters:
+          log: INFO
+          output_stream_1: 'exp_data'
+          output_characteristic_1: 'force'
+          input_stream: 'emg_data'
+          data_type: 'float32'
+          max_len: *max_len
+          desired_fs: *desired_fs
+          refresh_freq: *refresh_freq
+          experimental_feature: 'AUX  Force'
+          otb_filepath: *otb_filepath
+          testing: False
+          sync_key: 'emg_clock'
+
+derivatives:
+  - save_nwb_from_rdb:
+        name: derivatives/save_nwb_from_rdb/save_nwb_from_rdb.py
+        module: ../brand-modules/emg-emulator-dl-module
+        autorun: True
+        parameters:
+            output_nwb_filename: *output_nwb_filename
+            stream_definitions: *stream_definitions
+  - ReadNWBoptimizeCNN:
+        name: derivatives/ReadNWBoptimizeCNN/ReadNWBoptimizeCNN.py
+        module: ../brand-modules/emg-emulator-dl-module
+        autorun: True
+        parameters:
+            Data_parameters:
+                X_variable: 'emg_data'
+                Y_variable: 'exp_data'
+                stream_definitions: *stream_definitions
+            Training_parameters: 
+                epoch_count: 50
+                learning_rate: 0.001
+                standardize_input: 0
+                standardize_output: 0
+                val_split: 0.3
+                test_split: 0.1 
+                batch_size: 32
+                model_filename: *model_filename
+                earlystopping_patience: 10
+            Optimization_parameters: 
+                dropout_rate_list: [0.5]
+                max_conv_blocks_list: [3, 4, 5]
+                con_type_list: ['ones']
+                mlp_units_list: [[64,32]]
+                hidden_units_list: [64, 128]
+                output_type: ['cont']
+                filter_size_list: [8]
+            output_nwb_filename: *output_nwb_filename
+
+
+            
+
+          
+
+          
+          
+          

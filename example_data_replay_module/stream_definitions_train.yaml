@@ -1,0 +1,34 @@
+###########################################
+# stream definitions
+###########################################
+parameters:
+  frequency: &frequency 1280
+  refresh_freq: &refresh_freq 32
+
+RedisStreams:
+  Inputs:
+      ### what should be put in here?
+  Outputs:
+    emg_data:
+      enable_nwb:           True
+      type_nwb:             TimeSeries
+      samples:
+        chan_per_stream:    128
+        frequency:          *frequency
+        refresh_freq:       *refresh_freq
+        sample_type:        float32
+        nwb:
+          unit:             waveform
+          description:      EMG_data
+    exp_data:
+      enable_nwb:           True
+      type_nwb:             Position
+      samples:
+        chan_per_stream:    1
+        frequency:          *frequency
+        refresh_freq:       *refresh_freq
+        sample_type:        float32
+        y_labels:           ['Force']
+        nwb:
+          unit:             force
+          description:      Force

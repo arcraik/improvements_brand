@@ -1,0 +1,73 @@
+graph_name: EMG_read_process_test
+metadata:
+    participant_id:            sim
+    session_description:       EMG model test based on previously collected data
+
+# ----------------------------------------------------- 
+
+# graph parameters
+parameters:
+  total_channels: &total_channels 128
+  max_repetitions: &max_repetitions 1
+  desired_fs: &desired_fs 1280
+  max_len: &max_len 200000
+  refresh_freq: &refresh_freq 32
+  output_nwb_filename: &output_nwb_filename 'output_predictions.nwb'
+  stream_definitions: &stream_definitions '../stream_definitions_test.yaml'
+  model_filename: &model_filename '../derivatives/ReadNWBoptimizeCNN/models/CNN_opt.tflite'
+  otb_filepath: &otb_filepath '/home/Data/EMG/Original_data/file.otb+'
+
+
+# node-specific parameters
+nodes:
+    - name:         ReadOTBStreamEMG
+      nickname:     ReadOTBStreamEMG
+      module:       ../brand-modules/emg-emulator-dl-module
+      run_priority: 99
+      parameters:
+          log: INFO
+          output_stream_1: 'emg_data'
+          output_characteristic_1: 'waveform'
+          data_type: 'float32'
+          max_len: *max_len
+          desired_fs: *desired_fs
+          refresh_freq: *refresh_freq
+          max_repetitions: *max_repetitions
+          channel_count: *total_channels
+          otb_filepath: *otb_filepath
+          testing: False
+          sync_key: 'emg_clock'
+    - name:         ReadStreamDecodeEMG
+      nickname:     ReadStreamDecodeEMG
+      module:       ../brand-modules/emg-emulator-dl-module
+      run_priority:                 99
+      parameters:
+          log: INFO
+          input_stream: 'emg_data'
+          input_characteristic: 'waveform'
+          input_data_type: 'float32'
+          output_data_type: 'float32'
+          model_file_path: *model_filename
+          max_len: *max_len
+          desired_fs: *desired_fs
+          refresh_freq: *refresh_freq
+          output_stream: 'exp_data'
+          output_characteristic: 'force'
+          sync_key: 'decoder_clock'
+
+derivatives:
+  - save_nwb_from_rdb:
+        name: derivatives/save_nwb_from_rdb/save_nwb_from_rdb.py
+        module: ../brand-modules/emg-emulator-dl-module
+        autorun: True
+        parameters:
+            output_nwb_filename: *output_nwb_filename
+            stream_definitions: *stream_definitions
+
+            
+
+          
+
+          
+          
+          

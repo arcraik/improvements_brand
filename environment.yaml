@@ -1,0 +1,61 @@
+name: rt
+channels:
+  - conda-forge 
+dependencies:
+  - _libgcc_mutex=0.1
+  - ca-certificates
+  - certifi
+  - ld_impl_linux-64
+  - libedit
+  - libffi
+  - libgcc-ng
+  - libstdcxx-ng
+  - ncurses
+  - openssl
+  - python=3.11.9
+  - cudatoolkit=11.8  # match cudatoolkit version with cudnn, tensorflow, and graphics driver
+# need to  install cudnn=8.6 outside of this file with pip
+# > pip install nvidia-cudnn-cu11==8.6.0.163
+# then, 
+# > export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+# confirm all  good with:
+# > conda list | grep cudatoolkit
+# > conda list | grep cudnn
+  - pip
+  - setuptools
+  - wheel
+  - readline
+  - sqlite=3.*
+  - tk
+  - xz
+  - zlib
+  - pip:
+    - cython
+    - redis
+    - coloredlogs
+    - crc
+    - icecream
+    - keras
+    - matplotlib
+    - mne 
+    - neo
+    - nlb_tools
+    - numpy
+    - pandas
+    - pycorrelate
+    - pyglet
+    - pylsl
+    - pynwb
+    - python_dateutil
+    - PyYAML
+    - quantities
+    - scikit_learn
+    - scipy
+    - seaborn
+    - setuptools
+    - sh
+    - tensorflow==2.13 # check version
+    - torch
+    - tqdm
+    - xmltodict
+    - -e ./lib/python
